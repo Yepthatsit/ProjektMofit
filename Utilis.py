@@ -1,5 +1,5 @@
 import pandas as pd
-import types
+import typing
 import numpy as np
 from numba import njit
 import math
@@ -13,7 +13,7 @@ def two():
 def ReadFile(FilePath)-> pd.DataFrame:
     return pd.read_csv(FilePath,sep = r"\s+", header=None)
 
-def pos_real(grid: types.Iterable, k: int):
+def pos_real(grid: pd.DataFrame, k: int):
     pos = np.zeros(2)
     for i in range(4):
         pos[0] += grid.iloc[k-1, 0]
