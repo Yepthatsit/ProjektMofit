@@ -65,7 +65,8 @@ def q1(ksi):
     return ksi*(ksi-1)/2
 @njit
 def q2(ksi):
-    return (1-ksi)*(1-ksi)
+    return (1-ksi)*(1+ksi)
+
 @njit
 def q3(ksi):
     return ksi*(ksi+1)/2
@@ -91,4 +92,35 @@ def hi(i:int,ksi1,ksi2):
             return q2(ksi1)*q3(ksi2)
         case 9:
             return q2(ksi1)*q2(ksi2)
-    
+@njit   
+def wi(i:int):
+    if i <=2:
+        return (18 + np.sqrt(30))/36
+    else:
+        return (18 - np.sqrt(30))/36
+@njit
+def Pi(i):
+    match i:
+        case 1:
+            return - np.sqrt(3/7 - 2/7*np.sqrt(6/5))
+        case 2:
+            return np.sqrt(3/7 - 2/7*np.sqrt(6/5))
+        case 3:
+            return np.sqrt(3/7 + 2/7*np.sqrt(6/5))
+        case 4:
+            return -np.sqrt(3/7 + 2/7*np.sqrt(6/5))
+@njit
+def Sloc(a):
+    jm = []
+    im = []
+    sm = []
+    for j in range(1,10):
+        for i in range(1,10):
+            jm.append(j)
+            im.append(i)
+            s = 0
+            for l in range (1,5):
+                for n in range(1,5):
+                    s += wi(l)*wi(n)*hi(j,Pi(l),Pi(n))*hi(i,Pi(l),Pi(n))
+            sm.append((a**2/4)*s)
+    return jm,im,sm
