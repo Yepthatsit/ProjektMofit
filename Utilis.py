@@ -124,3 +124,26 @@ def Sloc(a):
                     s += wi(l)*wi(n)*hi(j,Pi(l),Pi(n))*hi(i,Pi(l),Pi(n))
             sm.append((a**2/4)*s)
     return jm,im,sm
+@njit
+def DifferentiateKsi2(func:typing.Callable,i, delta:float,ksi1,ksi2):
+    return (func(i,ksi1,ksi2+delta) - func(i,ksi1,ksi2-delta))/(2*delta)
+@njit    
+def DifferentiateKsi1(func:typing.Callable,i, delta:float,ksi1,ksi2):
+    return (func(i,ksi1+ delta,ksi2) - func(i,ksi1-delta,ksi2))/(2*delta)
+
+@njit
+def Tmatrix(m,Delta): #w jednostkach atomowych
+    jm = []
+    im = []
+    Tloc = []
+    for j in range(1,10):
+        for i in range(1,10):
+            jm.append(j)
+            im.append(i)
+            T = 0.0
+            for l in range(1,5):
+                for n in range(1,5):
+                    T += wi(l)*wi(n)*(DifferentiateKsi2(hi,j,Delta,Pi(l),Pi(n))*DifferentiateKsi2(hi,i,Delta,Pi(l),Pi(n)) +
+                    DifferentiateKsi1(hi,j,Delta,Pi(l),Pi(n))*DifferentiateKsi1(hi,i,Delta,Pi(l),Pi(n)))
+            Tloc.append(T)
+    return jm,im,np.array(Tloc)*1/(2*m)
