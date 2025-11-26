@@ -47,7 +47,7 @@ def xy_nlg(k:int, i:int, nlg:np.ndarray, wezly:np.ndarray):
     x_nlg = wezly[:,1][wezly[:,0] == global_number][0]
     y_nlg = wezly[:,2][wezly[:,0] == global_number][0]
     return x_nlg, y_nlg
-    
+@njit    
 def xryr(k:int, ksi1:int, ksi2:int, nlg:np.ndarray, wezly:np.ndarray):
     # k - nr elementu
     x, y = 0, 0
@@ -124,3 +124,45 @@ def Sloc(a):
                     s += wi(l)*wi(n)*hi(j,Pi(l),Pi(n))*hi(i,Pi(l),Pi(n))
             sm.append((a**2/4)*s)
     return jm,im,sm
+@njit
+def DifferentiateKsi2(func:typing.Callable,i, delta:float,ksi1,ksi2):
+    return (func(i,ksi1,ksi2+delta) - func(i,ksi1,ksi2-delta))/(2*delta)
+@njit    
+def DifferentiateKsi1(func:typing.Callable,i, delta:float,ksi1,ksi2):
+    return (func(i,ksi1+ delta,ksi2) - func(i,ksi1-delta,ksi2))/(2*delta)
+
+@njit
+def Tmatrix(m,Delta): #w jednostkach atomowych
+    jm = []
+    im = []
+    Tloc = []
+    for j in range(1,10):
+        for i in range(1,10):
+            jm.append(j)
+            im.append(i)
+            T = 0.0
+            for l in range(1,5):
+                for n in range(1,5):
+                    T += wi(l)*wi(n)*(DifferentiateKsi2(hi,j,Delta,Pi(l),Pi(n))*DifferentiateKsi2(hi,i,Delta,Pi(l),Pi(n)) +
+                    DifferentiateKsi1(hi,j,Delta,Pi(l),Pi(n))*DifferentiateKsi1(hi,i,Delta,Pi(l),Pi(n)))
+            Tloc.append(T)
+    return jm,im,np.array(Tloc)*1/(2*m)
+
+#TODO fix function below
+@njit
+def Vkmatrix(k,a,m,omega,nlg:np.ndarray, wezly:np.ndarray):
+    c = (a**2)*m*(omega**2)/8
+    jm = []
+    im = []
+    Vloc = []
+    for j in range(1,10):
+        for i in range(1,10):
+            V = 0.0
+            for l in range(1,5):
+                for n in range(1,5):
+                    x,y = xryr(k,Pi(l),Pi(n),nlg,wezly)
+                    V += wi(l)*wi(n)*hi(j,Pi(l),Pi(n))*hi(i,Pi(l),Pi(n))*(x**2+y**2)
+            jm.append(j)
+            im.append(i)
+            Vloc.append(V)
+    return jm,im,np.array(Vloc)*c
