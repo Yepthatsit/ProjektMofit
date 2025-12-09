@@ -131,7 +131,7 @@ def Sloc(a):
                 for n in range(1,5):
                     s += wi(l)*wi(n)*hi(j,Pi(l),Pi(n))*hi(i,Pi(l),Pi(n))
             sm.append((a**2/4)*s)
-    return jm,im,sm
+    return jm,im,np.array(sm)
 @njit
 def DifferentiateKsi2(func:typing.Callable,i, delta:float,ksi1,ksi2):
     return (func(i,ksi1,ksi2+delta) - func(i,ksi1,ksi2-delta))/(2*delta)
@@ -158,7 +158,7 @@ def Tmatrix(m,Delta): #w jednostkach atomowych
 
 #TODO fix function below
 @njit
-def Vkmatrix(k,a,m,omega,nlg:np.ndarray, wezly:np.ndarray):
+def Vkmatrix(k, a, m, omega, nlg:np.ndarray, wezly:np.ndarray):
     c = (a**2)*m*(omega**2)/8
     jm = []
     im = []
@@ -177,12 +177,27 @@ def Vkmatrix(k,a,m,omega,nlg:np.ndarray, wezly:np.ndarray):
             Vloc.append(V)
     return jm,im,np.array(Vloc)*c
 
-@njit
-def Gmatrix(s: np.ndarray, t: np.ndarray, v: np.ndarray, N):
-    nlg_max = 4*N + 1
+#@njit
+def Gmatrix(N:int, nlg:np.ndarray, wezly:np.ndarray, a: float):
+    m = 0.067
+    Delta = 0.0001
+    omega = omega = 10/27211.6
+    
+    nlg_max = (4*N + 1)**2
     k_max = N**2
-    S, H = np.zeros(nlg_max, nlg_max), np.zeros(nlg_max, nlg_max)
+    S, H = np.zeros((nlg_max, nlg_max)), np.zeros((nlg_max, nlg_max))
+    _, _, s = Sloc(a)
+    s = s.reshape((9, 9))
+    _, _, t = Tmatrix(m, Delta)
+    t = t.reshape((9, 9))
     for k in range(k_max):
+        _, _, v = Vkmatrix(k, a, m, omega, nlg, wezly)
+        v = v.reshape((9, 9))
         for i1 in range(9):
             for i2 in range(9):
-                pass#S[xy_nlg(k, i1, nlg, wezly)]
+                nlg1 = nlg_number(k+1, i1+1, nlg, wezly)
+                nlg2 = nlg_number(k+1, i2+1, nlg, wezly)
+                #print(k, i1, i2, nlg1, nlg2)
+                S[nlg1, nlg2] += s[i1, i2]
+                H[nlg1, nlg2] += t[i1, i2] + v[i1, i2]
+    return S, H
