@@ -169,7 +169,9 @@ def Vkmatrix(k,a,m,omega,nlg:np.ndarray, wezly:np.ndarray):
             for l in range(1,5):
                 for n in range(1,5):
                     x,y = xryr(k,Pi(l),Pi(n),nlg,wezly)
-                    V += wi(l)*wi(n)*hi(j,Pi(l),Pi(n))*hi(i,Pi(l),Pi(n))*(x**2+y**2)
+                    x /= 0.05292
+                    y /= 0.05292
+                    V += wi(l)*wi(n)*hi(j,Pi(l),Pi(n))*hi(i,Pi(l),Pi(n))*((x)**2+y**2)
             jm.append(j)
             im.append(i)
             Vloc.append(V)
