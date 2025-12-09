@@ -148,7 +148,6 @@ def Tmatrix(m,Delta): #w jednostkach atomowych
             Tloc.append(T)
     return jm,im,np.array(Tloc)*1/(2*m)
 
-#TODO fix function below
 @njit
 def Vkmatrix(k,a,m,omega,nlg:np.ndarray, wezly:np.ndarray):
     c = (a**2)*m*(omega**2)/8
