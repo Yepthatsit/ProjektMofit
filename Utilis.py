@@ -38,15 +38,23 @@ def gi(i:int,ksi1,ksi2):
             return f1(ksi1)*f2(ksi2)
         case 4:
             return f2(ksi1)*f2(ksi2)
-@njit 
-def xy_nlg(k:int, i:int, nlg:np.ndarray, wezly:np.ndarray):
+        
+@njit
+def nlg_number(k:int, i:int, nlg:np.ndarray, wezly:np.ndarray):
     k_is = nlg[:,1][nlg[:,0] == k]
     k_globals = nlg[:,2][nlg[:,0] == k]
     k_i_global = k_globals[k_is == i]
     global_number = k_i_global[0]
+    return global_number
+        
+@njit
+def xy_nlg(k:int, i:int, nlg:np.ndarray, wezly:np.ndarray):
+    global_number = nlg_number(k, i, nlg, wezly)
     x_nlg = wezly[:,1][wezly[:,0] == global_number][0]
     y_nlg = wezly[:,2][wezly[:,0] == global_number][0]
+    #print('xd?', x_nlg, y_nlg)
     return x_nlg, y_nlg
+
 @njit    
 def xryr(k:int, ksi1:int, ksi2:int, nlg:np.ndarray, wezly:np.ndarray):
     # k - nr elementu
@@ -166,3 +174,13 @@ def Vkmatrix(k,a,m,omega,nlg:np.ndarray, wezly:np.ndarray):
             im.append(i)
             Vloc.append(V)
     return jm,im,np.array(Vloc)*c
+
+@njit
+def Gmatrix(s: np.ndarray, t: np.ndarray, v: np.ndarray, N):
+    nlg_max = 4*N + 1
+    k_max = N**2
+    S, H = np.zeros(nlg_max, nlg_max), np.zeros(nlg_max, nlg_max)
+    for k in range(k_max):
+        for i1 in range(9):
+            for i2 in range(9):
+                pass#S[xy_nlg(k, i1, nlg, wezly)]
