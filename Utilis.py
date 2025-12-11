@@ -64,8 +64,6 @@ def xryr(k:int, ksi1:int, ksi2:int, nlg:np.ndarray, wezly:np.ndarray):
         x += x_nlg*gi(i, ksi1, ksi2)
         y += y_nlg*gi(i, ksi1, ksi2)
     return x, y
-    
-
 
 # funkcje bikwadratowe
 @njit
@@ -176,7 +174,7 @@ def Vkmatrix(k, a, m, omega, nlg:np.ndarray, wezly:np.ndarray):
             Vloc.append(V)
     return jm,im,np.array(Vloc)*c
 
-#@njit
+@njit
 def Gmatrix(N:int, nlg:np.ndarray, wezly:np.ndarray, a: float):
     m = 0.067
     Delta = 0.0001
@@ -199,4 +197,23 @@ def Gmatrix(N:int, nlg:np.ndarray, wezly:np.ndarray, a: float):
                 #print(k, i1, i2, nlg1, nlg2)
                 S[nlg1, nlg2] += s[i1, i2]
                 H[nlg1, nlg2] += t[i1, i2] + v[i1, i2]
+    return S, H
+
+def Gboundary(N:int, S:np.ndarray, H:np.ndarray, nlg:np.ndarray, wezly:np.ndarray):
+    ksis = np.array([[-1,-1], [1, -1], [-1, 1], [1, 1],
+                    [0, -1], [1, 0], [-1, 0], [0, 1],
+                    [0, 0]])
+    k_max = N**2
+    x_max = wezly[:,2].max()
+    for k in range(k_max):
+        for i in range(9):
+            global_number = nlg_number(k+1, i+1, nlg, wezly)
+            ksi1 = ksis[i, 0]
+            ksi2 = ksis[i, 1]
+            x, y = xryr(k+1, ksi1, ksi2, nlg, wezly)
+            if abs(x) == x_max or abs(y) == x_max:
+                S[global_number, :] = 0
+                S[:, global_number] = 0
+                S[global_number, global_number] = 1
+                S[global_number, global_number] = -1410
     return S, H
