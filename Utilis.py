@@ -188,13 +188,12 @@ def Gmatrix(N:int, nlg:np.ndarray, wezly:np.ndarray, a: float):
     _, _, t = Tmatrix(m, Delta)
     t = t.reshape((9, 9))
     for k in range(k_max):
-        _, _, v = Vkmatrix(k, a, m, omega, nlg, wezly)
+        _, _, v = Vkmatrix(k+1, a, m, omega, nlg, wezly)
         v = v.reshape((9, 9))
         for i1 in range(9):
             for i2 in range(9):
                 nlg1 = nlg_number(k+1, i1+1, nlg, wezly)
                 nlg2 = nlg_number(k+1, i2+1, nlg, wezly)
-                #print(k, i1, i2, nlg1, nlg2)
                 S[nlg1-1, nlg2-1] += s[i1, i2]
                 H[nlg1-1, nlg2-1] += t[i1, i2] + v[i1, i2] 
     return S, H
