@@ -181,7 +181,7 @@ def Gmatrix(N:int, nlg:np.ndarray, wezly:np.ndarray, a: float):
     omega = omega = 10/27211.6
     
     nlg_max = (4*N + 1)**2
-    k_max = N**2
+    k_max = (2*N)**2
     S, H = np.zeros((nlg_max, nlg_max)), np.zeros((nlg_max, nlg_max))
     _, _, s = Sloc(a)
     s = s.reshape((9, 9))
@@ -196,7 +196,7 @@ def Gmatrix(N:int, nlg:np.ndarray, wezly:np.ndarray, a: float):
                 nlg2 = nlg_number(k+1, i2+1, nlg, wezly)
                 #print(k, i1, i2, nlg1, nlg2)
                 S[nlg1-1, nlg2-1] += s[i1, i2]
-                H[nlg1-1, nlg2-1] += t[i1, i2] + v[i1, i2]
+                H[nlg1-1, nlg2-1] += t[i1, i2] + v[i1, i2] 
     return S, H
 
 @njit
@@ -204,7 +204,7 @@ def Gboundary(N:int, S:np.ndarray, H:np.ndarray, nlg:np.ndarray, wezly:np.ndarra
     ksis = np.array([[-1,-1], [1, -1], [-1, 1], [1, 1],
                     [0, -1], [1, 0], [-1, 0], [0, 1],
                     [0, 0]])
-    k_max = N**2
+    k_max = (2*N)**2
     x_max = wezly[:,2].max()
     for k in range(k_max):
         for i in range(9):
@@ -216,4 +216,8 @@ def Gboundary(N:int, S:np.ndarray, H:np.ndarray, nlg:np.ndarray, wezly:np.ndarra
                 S[global_number-1, :] = 0
                 S[:, global_number-1] = 0
                 S[global_number-1, global_number-1] = 1
+                
+                H[global_number-1, :] = 0
+                H[:, global_number-1] = 0
+                H[global_number-1, global_number-1] = -1410
     return S, H
