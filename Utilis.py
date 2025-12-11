@@ -195,10 +195,11 @@ def Gmatrix(N:int, nlg:np.ndarray, wezly:np.ndarray, a: float):
                 nlg1 = nlg_number(k+1, i1+1, nlg, wezly)
                 nlg2 = nlg_number(k+1, i2+1, nlg, wezly)
                 #print(k, i1, i2, nlg1, nlg2)
-                S[nlg1, nlg2] += s[i1, i2]
-                H[nlg1, nlg2] += t[i1, i2] + v[i1, i2]
+                S[nlg1-1, nlg2-1] += s[i1, i2]
+                H[nlg1-1, nlg2-1] += t[i1, i2] + v[i1, i2]
     return S, H
 
+@njit
 def Gboundary(N:int, S:np.ndarray, H:np.ndarray, nlg:np.ndarray, wezly:np.ndarray):
     ksis = np.array([[-1,-1], [1, -1], [-1, 1], [1, 1],
                     [0, -1], [1, 0], [-1, 0], [0, 1],
@@ -212,8 +213,7 @@ def Gboundary(N:int, S:np.ndarray, H:np.ndarray, nlg:np.ndarray, wezly:np.ndarra
             ksi2 = ksis[i, 1]
             x, y = xryr(k+1, ksi1, ksi2, nlg, wezly)
             if abs(x) == x_max or abs(y) == x_max:
-                S[global_number, :] = 0
-                S[:, global_number] = 0
-                S[global_number, global_number] = 1
-                S[global_number, global_number] = -1410
+                S[global_number-1, :] = 0
+                S[:, global_number-1] = 0
+                S[global_number-1, global_number-1] = 1
     return S, H
