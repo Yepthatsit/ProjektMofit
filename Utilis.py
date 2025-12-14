@@ -221,19 +221,44 @@ def Gboundary(N:int, S:np.ndarray, H:np.ndarray, nlg:np.ndarray, wezly:np.ndarra
                 H[global_number-1, global_number-1] = -1410
     return S, H
 
+@njit
+def CalculatePsi(C, n,N, nlg, wezly):
+    nlg = 4*N +1
+    nlg_max = (nlg)**2
+    Psi = np.zeros((nlg, nlg))
+    ksis = np.array([[-1,-1], [1, -1], [-1, 1], [1, 1],
+                    [0, -1], [1, 0], [-1, 0], [0, 1],
+                    [0, 0]])
+    k_max = (2*N)**2
+    x_max = wezly[:,2].max()
+    Cn = C[:,n]
+    Cn = Cn.reshape((nlg, nlg))
+    for nlg1 in range(nlg):
+        for nlg2 in range(nlg):
+            PsiLoc = 0
+            for ksi in ksis:
+                for j in range(1,10):
+                    PsiLoc += C[nlg1-1, nlg2-1]*hi(j,ksi[0],ksi[1])
+            Psi[nlg1,nlg2] = PsiLoc
+    return Psi
+
 
 @njit
 def psi_in_element(k: int, ksi1: float, ksi2: float,
                    Cn: np.ndarray,
                    nlg: np.ndarray,
                    wezly: np.ndarray):
+    """
+    ψ(x,y) w elemencie k w punkcie (ksi1, ksi2)
+    Cn – wektor własny dla danego stanu (1D!)
+    """
     psi = 0.0
     for i in range(1, 10):
         global_i = nlg_number(k, i, nlg, wezly)
         psi += Cn[global_i - 1] * hi(i, ksi1, ksi2)
     return psi
 
-def psi_on_element_grid(k, Cn, nlg, wezly, npts=9):
+def psi_on_element_grid(k, Cn, nlg, wezly, npts=40):
     ksi = np.linspace(-1, 1, npts)
     Psi = np.zeros((npts, npts))
 
@@ -245,6 +270,9 @@ def psi_on_element_grid(k, Cn, nlg, wezly, npts=9):
     return Psi
 
 def psi_on_whole_grid(C, n, N, nlg, wezly, npts=20):
+    """
+    ψ(x,y) na całej siatce (2N x 2N elementów)
+    """
     Cn = C[:, n]
 
     nel = 2 * N
