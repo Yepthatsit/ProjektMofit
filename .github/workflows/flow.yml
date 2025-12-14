@@ -8,13 +8,13 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install texlive-xetex inkscape pandoc
       - uses: actions/checkout@v4
-      - run: pip install pint pint_pandas scipy numpy pandas nbconvert ipykernel matplotlib openpyxl numba
+      - run: pip install pint pint_pandas scipy numpy pandas nbconvert ipykernel matplotlib openpyxl numba plotly
       - run: | 
-             python -m nbconvert --to pdf --execute raport.ipynb
-             python -m nbconvert --to pdf --no-input raport.ipynb --output raport_no_code.pdf
+             python -m nbconvert --to pdf --execute ogólny_raport.ipynb
+             python -m nbconvert --to pdf --no-input ogólny_raport.ipynb --output raport_no_code.pdf
       - uses: actions/upload-artifact@v4 
         with:
           path: |
-                raport.pdf
+                ogólny_raport.pdf
                 raport_no_code.pdf
           
