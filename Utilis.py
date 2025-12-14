@@ -220,3 +220,26 @@ def Gboundary(N:int, S:np.ndarray, H:np.ndarray, nlg:np.ndarray, wezly:np.ndarra
                 H[:, global_number-1] = 0
                 H[global_number-1, global_number-1] = -1410
     return S, H
+@njit
+def CalculatePsi(C, n,N, nlg, wezly):
+    nlg_max = (4*N + 1)**2
+    Psi = np.zeros((nlg_max, nlg_max))
+    ksis = np.array([[-1,-1], [1, -1], [-1, 1], [1, 1],
+                    [0, -1], [1, 0], [-1, 0], [0, 1],
+                    [0, 0]])
+    k_max = (2*N)**2
+    x_max = wezly[:,2].max()
+    Cn = C[:,n]
+    Cn = Cn.reshape((nlg_max, nlg_max))
+    for k in range(k_max):
+        for i1 in range(9):
+            for i2 in range(9):
+                nlg1 = nlg_number(k+1, i1+1, nlg, wezly)
+                nlg2 = nlg_number(k+1, i2+1, nlg, wezly)
+                PsiLoc = 0
+                for j in range(1,10):
+                    Ksi = ksis[j-1]
+                    Ksi1 = Ksi[0]
+                    Ksi2 = Ksi[1]
+                    PsiLoc += C[nlg1-1, nlg2-1]*hi(j,Ksi1,Ksi2)
+    return Psi
