@@ -220,26 +220,52 @@ def Gboundary(N:int, S:np.ndarray, H:np.ndarray, nlg:np.ndarray, wezly:np.ndarra
                 H[:, global_number-1] = 0
                 H[global_number-1, global_number-1] = -1410
     return S, H
+
+
 @njit
-def CalculatePsi(C, n,N, nlg, wezly):
-    nlg_max = (4*N + 1)**2
-    Psi = np.zeros((nlg_max, nlg_max))
-    ksis = np.array([[-1,-1], [1, -1], [-1, 1], [1, 1],
-                    [0, -1], [1, 0], [-1, 0], [0, 1],
-                    [0, 0]])
-    k_max = (2*N)**2
-    x_max = wezly[:,2].max()
-    Cn = C[:,n]
-    Cn = Cn.reshape((nlg_max, nlg_max))
-    for k in range(k_max):
-        for i1 in range(9):
-            for i2 in range(9):
-                nlg1 = nlg_number(k+1, i1+1, nlg, wezly)
-                nlg2 = nlg_number(k+1, i2+1, nlg, wezly)
-                PsiLoc = 0
-                for j in range(1,10):
-                    Ksi = ksis[j-1]
-                    Ksi1 = Ksi[0]
-                    Ksi2 = Ksi[1]
-                    PsiLoc += C[nlg1-1, nlg2-1]*hi(j,Ksi1,Ksi2)
+def psi_in_element(k: int, ksi1: float, ksi2: float,
+                   Cn: np.ndarray,
+                   nlg: np.ndarray,
+                   wezly: np.ndarray):
+    psi = 0.0
+    for i in range(1, 10):
+        global_i = nlg_number(k, i, nlg, wezly)
+        psi += Cn[global_i - 1] * hi(i, ksi1, ksi2)
+    return psi
+
+def psi_on_element_grid(k, Cn, nlg, wezly, npts=9):
+    ksi = np.linspace(-1, 1, npts)
+    Psi = np.zeros((npts, npts))
+
+    for i in range(npts):
+        for j in range(npts):
+            Psi[i, j] = psi_in_element(
+                k, ksi[i], ksi[j], Cn, nlg, wezly
+            )
+    return Psi
+
+def psi_on_whole_grid(C, n, N, nlg, wezly, npts=20):
+    Cn = C[:, n]
+
+    nel = 2 * N
+    grid_pts = nel * (npts - 1) + 1
+    Psi = np.zeros((grid_pts, grid_pts))
+
+    ksi = np.linspace(-1, 1, npts)
+
+    for ey in range(nel):
+        for ex in range(nel):
+            k = ey * nel + ex + 1  # numer elementu
+
+            for i in range(npts):
+                for j in range(npts):
+                    psi_val = 0.0
+                    for loc in range(1, 10):
+                        g = nlg_number(k, loc, nlg, wezly)
+                        psi_val += Cn[g - 1] * hi(loc, ksi[i], ksi[j])
+
+                    gx = ex * (npts - 1) + i
+                    gy = ey * (npts - 1) + j
+                    Psi[gx, gy] = psi_val
+
     return Psi
