@@ -244,10 +244,7 @@ def CalculatePsi(C, n,N, nlg, wezly):
 
 
 @njit
-def psi_in_element(k: int, ksi1: float, ksi2: float,
-                   Cn: np.ndarray,
-                   nlg: np.ndarray,
-                   wezly: np.ndarray):
+def psi_in_element(k: int, ksi1: float, ksi2: float, Cn: np.ndarray, nlg: np.ndarray, wezly: np.ndarray):
     psi = 0.0
     for i in range(1, 10):
         global_i = nlg_number(k, i, nlg, wezly)
@@ -260,9 +257,7 @@ def psi_on_element_grid(k, Cn, nlg, wezly, npts=40):
 
     for i in range(npts):
         for j in range(npts):
-            Psi[i, j] = psi_in_element(
-                k, ksi[i], ksi[j], Cn, nlg, wezly
-            )
+            Psi[i, j] = psi_in_element(k, ksi[i], ksi[j], Cn, nlg, wezly)
     return Psi
 
 def psi_on_whole_grid(C, n, N, nlg, wezly, npts=20):
@@ -276,7 +271,7 @@ def psi_on_whole_grid(C, n, N, nlg, wezly, npts=20):
 
     for ey in range(nel):
         for ex in range(nel):
-            k = ey * nel + ex + 1  # numer elementu
+            k = ey * nel + ex + 1
 
             for i in range(npts):
                 for j in range(npts):
@@ -284,11 +279,9 @@ def psi_on_whole_grid(C, n, N, nlg, wezly, npts=20):
                     for loc in range(1, 10):
                         g = nlg_number(k, loc, nlg, wezly)
                         psi_val += Cn[g - 1] * hi(loc, ksi[i], ksi[j])
-
                     gx = ex * (npts - 1) + i
                     gy = ey * (npts - 1) + j
                     Psi[gx, gy] = psi_val
-
     return Psi
 
 
