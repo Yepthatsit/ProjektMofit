@@ -248,10 +248,6 @@ def psi_in_element(k: int, ksi1: float, ksi2: float,
                    Cn: np.ndarray,
                    nlg: np.ndarray,
                    wezly: np.ndarray):
-    """
-    ψ(x,y) w elemencie k w punkcie (ksi1, ksi2)
-    Cn – wektor własny dla danego stanu (1D!)
-    """
     psi = 0.0
     for i in range(1, 10):
         global_i = nlg_number(k, i, nlg, wezly)
@@ -270,9 +266,6 @@ def psi_on_element_grid(k, Cn, nlg, wezly, npts=40):
     return Psi
 
 def psi_on_whole_grid(C, n, N, nlg, wezly, npts=20):
-    """
-    ψ(x,y) na całej siatce (2N x 2N elementów)
-    """
     Cn = C[:, n]
 
     nel = 2 * N
