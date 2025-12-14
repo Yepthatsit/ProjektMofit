@@ -5,7 +5,7 @@ from numba import njit
 import math
 import matplotlib.pyplot as plt
 from math import sin, cos, pi, e, exp
-from scipy.linalg import eigh
+from scipy.linalg import  solve
 
 def two():
     return 2
@@ -283,3 +283,44 @@ def psi_on_whole_grid(C, n, N, nlg, wezly, npts=20):
                     gy = ey * (npts - 1) + j
                     Psi[gx, gy] = psi_val
     return Psi
+
+
+def CN_step(d, S, H, dt = 100):
+    A = S - 1j * dt/2 * H
+    B = S + 1j * dt/2 * H
+    return solve(A, B @ d)
+
+@njit
+def Xkmatrix(k, a, nlg, wezly):
+    jm, im, Xloc = [], [], []
+    for j in range(1,10):
+        for i in range(1,10):
+            val = 0.0
+            for l in range(1,5):
+                for n in range(1,5):
+                    x, _ = xryr(k, Pi(l), Pi(n), nlg, wezly)
+                    x /= 0.05292  # a.u.
+                    val += wi(l)*wi(n)*hi(j,Pi(l),Pi(n))*hi(i,Pi(l),Pi(n))*x
+            jm.append(j)
+            im.append(i)
+            Xloc.append(val * a**2 / 4)
+    return jm, im, np.array(Xloc)
+
+def Xmatrix(N, nlg, wezly, a):
+    nlg_max = (4*N + 1)**2
+    k_max = (2*N)**2
+    X = np.zeros((nlg_max, nlg_max))
+
+    for k in range(k_max):
+        jm, im, xloc = Xkmatrix(k+1, a, nlg, wezly)
+        xloc = xloc.reshape((9,9))
+        for i1 in range(9):
+            for i2 in range(9):
+                g1 = nlg_number(k+1, i1+1, nlg, wezly)
+                g2 = nlg_number(k+1, i2+1, nlg, wezly)
+                X[g1-1, g2-1] += xloc[i1, i2]
+
+    return X
+
+def x_expect(d, X):
+    return np.real(np.conj(d) @ (X @ d))
