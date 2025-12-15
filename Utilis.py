@@ -241,8 +241,8 @@ def CalculatePsi(C, n,N, nlg, wezly):
                     PsiLoc += C[nlg1-1, nlg2-1]*hi(j,ksi[0],ksi[1])
             Psi[nlg1,nlg2] = PsiLoc
     return Psi
-
-
+ ############################ Psi From coefs to zastępuje bo ma dobrze ustawioną liczbe punktów w lokalnym węźle###############################
+#########################################################################################
 @njit
 def psi_in_element(k: int, ksi1: float, ksi2: float, Cn: np.ndarray, nlg: np.ndarray, wezly: np.ndarray):
     psi = 0.0
@@ -283,7 +283,31 @@ def psi_on_whole_grid(C, n, N, nlg, wezly, npts=20):
                     gy = ey * (npts - 1) + j
                     Psi[gx, gy] = psi_val
     return Psi
+##################################################################################################
 
+def psi_from_coeffs(d, N, nlg, wezly):
+    """
+    Z wektora współczynników d buduje Psi na całej siatce elementów.
+    """
+    nel = 2 * N
+    npts = 9
+    grid_pts = nel * (npts - 1) + 1
+    Psi = np.zeros((grid_pts, grid_pts), dtype=np.complex128)
+    ksi = np.linspace(-1, 1, npts)
+
+    for ey in range(nel):
+        for ex in range(nel):
+            k = ey * nel + ex + 1
+            for i in range(npts):
+                for j in range(npts):
+                    psi_val = 0.0
+                    for loc in range(1, 10):
+                        g = nlg_number(k, loc, nlg, wezly)
+                        psi_val += d[g-1] * hi(loc, ksi[j], ksi[i])  # y, x
+                    gy = ey * (npts - 1) + i
+                    gx = ex * (npts - 1) + j
+                    Psi[gy, gx] = psi_val
+    return Psi
 
 def CN_step(d, S, H, dt = 100):
     A = S - 1j * dt/2 * H
